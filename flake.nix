@@ -75,6 +75,19 @@
           };
         };
 
+        ansibleBLImg = pkgs.dockerTools.buildLayeredImage {
+          name = "ansible-omni-deploy"; # an "omni-potent" deploy image, i.e. contains ansible modules for systemd, database, podman etc. management
+          tag = "latest";
+
+          contents = imgContentDrv;
+
+          config = {
+            Cmd = [
+              "ansible-playbook" "--version"
+            ];
+          };
+        };
+
         ansibleImg = pkgs.dockerTools.buildImage {
           name = "ansible-omni-deploy"; # an "omni-potent" deploy image, i.e. contains ansible modules for systemd, database, podman etc. management
           tag = "latest";
