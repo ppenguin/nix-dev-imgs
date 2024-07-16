@@ -62,6 +62,14 @@ REGISTRY="quay.io" REGACCOUNT=reguser DOCKERHUBTOKEN=regpasswd REPO="devops-imgs
 # where imageName and imageTags are set in the flake
 ```
 
+## Brainstorm / WIP
+
+Maybe better DX/UX if we do the following:
+
+- Define the wanted environments under `devenvs/<envname>` in `nix` files with standardised names and factored such that we have enough flexibility to diverge a bit as necessary between container payload and devshell packages, but still DRY.
+- Iterate over `devenvs/` and automatically generate the flake attributes for `devShells` and `packages` (images), where their corresponding names are just that of the subdir.
+- The push apps could be generated in the same fashion by iterating over the `packages` outputs (possibly filtering just in case by container packages).
+
 ## Limitations
 
 This setup currently is meant to be used as one `flake` per environment, which is in principle the "right way", since it
@@ -69,3 +77,5 @@ addresses an environment related to a `git` repo.
 
 The first sensible improvement would be to wrap the derivation functions themselves in a generic way and outfactor them to a
 "public library `flake`" that can be used as an input. (This should be trivial.)
+
+Or, instead one could first focus on doing a template, so we don't _include_ it as a library, but instead just copy it as a template?
