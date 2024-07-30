@@ -1,9 +1,7 @@
-{pkgs, ...}: let
-  inherit (import ./build-inputs.nix {inherit pkgs;}) pyEnv ansibleCollectionPath;
+{ pkgs, ... }:
+let
+  inherit (import ./build-inputs.nix { inherit pkgs; }) commonInputs;
 in
-  pkgs.mkShell {
-    buildInputs = [pyEnv] ++ (with pkgs; [dive nix]);
-    shellHook = ''
-      export ANSIBLE_COLLECTIONS_PATHS="${ansibleCollectionPath}"
-    '';
-  }
+pkgs.mkShell {
+  buildInputs = commonInputs ++ (with pkgs; [ dive ]);
+}

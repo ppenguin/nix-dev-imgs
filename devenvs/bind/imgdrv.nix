@@ -10,7 +10,7 @@ in
 # https://ryantm.github.io/nixpkgs/builders/images/dockertools/
 pkgs.dockerTools.buildLayeredImage {
   inherit name;
-  tag = "latest";
+  tag = "1.0.0";
   created = "now";
   contents = pkgs.buildEnv {
     name = "image-root";
