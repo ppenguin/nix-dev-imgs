@@ -1,4 +1,4 @@
-# SuDoF (SuperDevOpsFlake)
+# NixDevImgs
 
 ## Rationale
 
@@ -17,17 +17,20 @@ it would be cool if we could automatically reproduce said `devShell` environment
 To enter the `devShell`:
 
 ```sh
-nix develop path/to/flake-dir
-# because this flake only defines one `devShell` attribute, no further specifier is necessary
+nix develop path/to/flake-dir#<devenv>
 ```
 
-or automatically by having a working `direnv` and put in your `.envrc`:
+where `<devenv>` is the name of your environment, corresponding to a directory name under `./devenvs`.
+
+For this to work there must be a corresponding shell definition in `./devenvs/<name>/devshell.nix`
+
+Or automatically load the `devShell` by having a working `direnv` and put in your `.envrc`:
 
 ```sh
 #!/usr/bin/env bash
 # .envrc
 ...
-use flake path/to/flake-dir
+use flake path/to/flake-dir#<devenvs>
 ...
 ```
 
@@ -36,46 +39,32 @@ use flake path/to/flake-dir
 To build a compressed container image archive to `/nix/store/...` (using `buildLayeredImage`):
 
 ```sh
-nix build path/to/flake-dir#ansibleBLImg
-podman load </nix/store/compressed-image....tgz   # or docker
-```
-
-To build a script that outputs (streams) the uncompressed image to `stdout` when run:
-
-```sh
-nix build path/to/flake-dir#ansibleSLImg
-./result | podman load   # or docker
+nix build path/to/flake-dir#<devenv>
+podman load <./result   # or docker
 ```
 
 To build the image and upload it to our internal registry:
 
 ```sh
-REGISTRY="docker://1nnoserv:15000" REPO="devops-imgs" nix run path/to/flake-dir#push2reg
+REGISTRY="docker://1nnoserv:15000" REPO="devops-imgs" nix run path/to/flake-dir#push2reg-<devenv>
 ```
 
 or for a public registry (e.g.):
 
 ```sh
-REGISTRY="quay.io" REGACCOUNT=reguser DOCKERHUBTOKEN=regpasswd REPO="devops-imgs" nix run path/to/flake-dir#push2reg
+REGISTRY="quay.io" REGACCOUNT=reguser DOCKERHUBTOKEN=regpasswd REPO="devops-imgs" nix run path/to/flake-dir#push2reg-<devenv>
 # the target will be expanded to:
 # quay.io/reguser/devops-imgs/imageName:imageTags
 # where imageName and imageTags are set in the flake
 ```
 
-## Brainstorm / WIP
+## Support
 
-Maybe better DX/UX if we do the following:
+You're very welcome to provide PRs with additional environments (i.e. dirs under `./devenvs`), especially for relatively generic cases.
 
-- Define the wanted environments under `devenvs/<envname>` in `nix` files with standardised names and factored such that we have enough flexibility to diverge a bit as necessary between container payload and devshell packages, but still DRY.
-- Iterate over `devenvs/` and automatically generate the flake attributes for `devShells` and `packages` (images), where their corresponding names are just that of the subdir.
-- The push apps could be generated in the same fashion by iterating over the `packages` outputs (possibly filtering just in case by container packages).
+You're also very welcome to help with below TODOs.
 
-## Limitations
+## TODO
 
-This setup currently is meant to be used as one `flake` per environment, which is in principle the "right way", since it
-addresses an environment related to a `git` repo.
-
-The first sensible improvement would be to wrap the derivation functions themselves in a generic way and outfactor them to a
-"public library `flake`" that can be used as an input. (This should be trivial.)
-
-Or, instead one could first focus on doing a template, so we don't _include_ it as a library, but instead just copy it as a template?
+- [ ] provide a flake template, that allows users to instantiate as a new flake and provide their own `./devenvs/...`. Possibly we could even have the template instantiate selected `<devenv>` dirs, such that we could use it as the "env provider" for specific cases while using appropriate examples from this repo as a starting point?
+- [ ] How to build containers for other archs?
