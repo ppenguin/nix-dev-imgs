@@ -16,11 +16,11 @@ in ''${(
       fi
       if [ -n "$REGACCOUNT" ] && [ -n "$DOCKERHUBTOKEN" ]; then
         echo "Logging in to the remote REPO=$REPO with user REGACCOUNT=$REGACCOUNT and the password in env var DOCKERHUBTOKEN"
-        ${pkgs.podman}/bin/podman login -u "$REGACCOUNT" -p "$DOCKERHUBTOKEN" "$REPO"
+        podman login -u "$REGACCOUNT" -p "$DOCKERHUBTOKEN" "$REPO"
       else
         echo "No credentials REGACCOUNT, DOCKERHUBTOKEN given, not logged in"
       fi
       REGACCOUNT=''${REGACCOUNT:+$REGACCOUNT/}
-      ${pkgs.podman}/bin/podman load < ${imageOut} && podman push $PUSHFLAGS ${imageName}:${imageTags} "$REGISTRY/$REGACCOUNT$REPO/${imageName}:${imageTags}"
+      podman load < ${imageOut} && podman push ${imageName}:${imageTags} "$REGISTRY/$REGACCOUNT$REPO/${imageName}:${imageTags}"
     ''
   )}/bin/${scriptname}''
