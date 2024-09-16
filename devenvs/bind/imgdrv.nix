@@ -16,11 +16,15 @@
     subgid
     ;
   pathsToLink = ["/usr" "/bin" "/var" "/etc"];
+  archtag = builtins.getAttr pkgs.system {
+    "x86_64-linux" = "amd64";
+    "aarch64-linux" = "arm64";
+  };
 in
   # https://ryantm.github.io/nixpkgs/builders/images/dockertools/
   pkgs.dockerTools.buildLayeredImage {
     inherit name;
-    tag = "1.1.1";
+    tag = "1.1.1-${archtag}";
     created = "now";
     contents = pkgs.buildEnv {
       name = "image-root";
