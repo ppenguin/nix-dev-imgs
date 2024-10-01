@@ -24,7 +24,7 @@ in
   # https://ryantm.github.io/nixpkgs/builders/images/dockertools/
   pkgs.dockerTools.buildLayeredImage {
     inherit name;
-    tag = "1.1.1-${archtag}";
+    tag = "1.1.2-${archtag}";
     created = "now";
     contents = pkgs.buildEnv {
       name = "image-root";
@@ -68,11 +68,10 @@ in
     config = {
       # NOTE: apparently this throws off gitlab CI runners (at least per default),
       # and leads to them not finding `sh` and failing.
-      # Leaving `Cmd` empty appears to work for that case
-      # Cmd = [
-      #   "buildah"
-      #   "--version"
-      # ];
+      # Leaving `Cmd` empty appears to work for that case <= or not?! problem appeared again!!!
+      Cmd = [
+        "bash"
+      ];
       Env = [
         "TEMP=/var/tmp"
       ];
