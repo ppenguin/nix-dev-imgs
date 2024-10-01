@@ -15,15 +15,20 @@
     subuid
     subgid
     ;
+  pathsToLink = ["/usr" "/bin" "/var" "/etc"];
+  archtag = builtins.getAttr pkgs.system {
+    "x86_64-linux" = "amd64";
+    "aarch64-linux" = "arm64";
+  };
 in
   # https://ryantm.github.io/nixpkgs/builders/images/dockertools/
   pkgs.dockerTools.buildLayeredImage {
     inherit name;
-    tag = "1.1.0";
+    tag = "1.1.2-${archtag}";
     created = "now";
     contents = pkgs.buildEnv {
       name = "image-root";
-      pathsToLink = ["/usr" "/bin" "/var" "/etc"];
+      inherit pathsToLink;
       paths =
         [
           containersconf
@@ -58,13 +63,14 @@ in
           gnused
           jq # needed for our g1tlab package makefiles for API access
           which
-          qemu # now we (hopefully) have multi-arch capability (requires --privileged, binfmt mounted and configured on runner)
         ]);
     };
     config = {
+      # NOTE: apparently this throws off gitlab CI runners (at least per default),
+      # and leads to them not finding `sh` and failing.
+      # Leaving `Cmd` empty appears to work for that case <= or not?! problem appeared again!!!
       Cmd = [
-        "buildah"
-        "--version"
+        "bash"
       ];
       Env = [
         "TEMP=/var/tmp"
