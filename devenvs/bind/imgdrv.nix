@@ -24,7 +24,7 @@ in
   # https://ryantm.github.io/nixpkgs/builders/images/dockertools/
   pkgs.dockerTools.buildLayeredImage {
     inherit name;
-    tag = "1.1.2-${archtag}";
+    tag = "1.1.3-${archtag}";
     created = "now";
     contents = pkgs.buildEnv {
       name = "image-root";
@@ -45,7 +45,7 @@ in
         ++ (with pkgs.dockerTools; [
           # "minimal" container env
           usrBinEnv
-          binSh # https://ryantm.github.io/nixpkgs/builders/images/dockertools/#sssec-pkgs-dockerTools-helpers-binSh
+          # binSh # https://ryantm.github.io/nixpkgs/builders/images/dockertools/#sssec-pkgs-dockerTools-helpers-binSh
           caCertificates
           # fakeNss # this is for /etc/{passwd,group,nsswitch.conf} (what else???)
         ])
@@ -66,13 +66,15 @@ in
         ]);
     };
     config = {
-      # NOTE: apparently this throws off gitlab CI runners (at least per default),
+      # NOTE: apparently this can throw off gitlab CI runners (at least per default),
       # and leads to them not finding `sh` and failing.
-      # Leaving `Cmd` empty appears to work for that case <= or not?! problem appeared again!!!
-      Cmd = [
-        "bash"
-      ];
+      # Some trial&horror reveals it works if we set Entrypoint = [] (explicitly empty), and Cmd = [ "sh" ]
+      # entrypoint cannot be `/bin/sh` because it executes any command we execute on the cli with `docker run`
+      # I.e. it will be unexpected behaviour
+      Entrypoint = [];
+      Cmd = ["sh"];
       Env = [
+        # "PATH=/bin:/usr/bin:/usr/local/bin"
         "TEMP=/var/tmp"
       ];
       uid = 1000;
